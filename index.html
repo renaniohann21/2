@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gerador de Ideias de Refeições | O que comer hoje?</title>
+  <style>
+    :root {
+      --bg: #0f172a;
+      --card: #1e293b;
+      --accent: #22c55e;
+      --accent-hover: #16a34a;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --border: #334155;
+      --highlight: #4ade80;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #0f172a 0%, #1e293b 50%, #0f172a 100%);
+      min-height: 100vh;
+      color: var(--text);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 30px;
+      max-width: 600px;
+    }
+
+    header h1 {
+      font-size: 2.2rem;
+      margin-bottom: 8px;
+      background: linear-gradient(90deg, #22c55e, #4ade80);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    header p {
+      color: var(--muted);
+      font-size: 1.05rem;
+    }
+
+    .container {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 28px;
+      width: 100%;
+      max-width: 520px;
+      box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      border: 1px solid var(--border);
+    }
+
+    .tipo-refeicao {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+      margin-bottom: 24px;
+    }
+
+    .tipo-btn {
+      background: #0f172a;
+      border: 2px solid var(--border);
+      color: var(--text);
+      padding: 14px 10px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-size: 0.95rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tipo-btn:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .tipo-btn.ativo {
+      background: rgba(34, 197, 94, 0.15);
+      border-color: var(--accent);
+      color: var(--highlight);
+    }
+
+    .tipo-btn span.emoji {
+      font-size: 1.6rem;
+    }
+
+    .opcoes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 24px;
+      justify-content: center;
+    }
+
+    .chip {
+      background: #0f172a;
+      border: 1px solid var(--border);
+      color: var(--muted);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      user-select: none;
+    }
+
+    .chip:hover {
+      border-color: var(--accent);
+      color: var(--text);
+    }
+
+    .chip.ativo {
+      background: rgba(34, 197, 94, 0.2);
+      border-color: var(--accent);
+      color: var(--highlight);
+    }
+
+    .btn-gerar {
+      width: 100%;
+      background: var(--accent);
+      color: #052e16;
+      border: none;
+      padding: 16px;
+      border-radius: 14px;
+      font-size: 1.1rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+    }
+
+    .btn-gerar:hover {
+      background: var(--accent-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 20px rgba(34, 197, 94, 0.3);
+    }
+
+    .btn-gerar:active {
+      transform: translateY(0);
+    }
+
+    .resultado {
+      margin-top: 28px;
+      min-height: 140px;
+      display: none;
+      animation: fadeIn 0.4s ease;
+    }
+
+    .resultado.visivel {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .card-resultado {
+      background: #0f172a;
+      border-radius: 16px;
+      padding: 22px;
+      border: 1px solid var(--border);
+      position: relative;
+    }
+
+    .card-resultado .categoria {
+      font-size: 0.8rem;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .card-resultado h2 {
+      font-size: 1.45rem;
+      margin-bottom: 10px;
+      line-height: 1.3;
+    }
+
+    .card-resultado p {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .tempo {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 14px;
+      background: rgba(34, 197, 94, 0.1);
+      color: var(--highlight);
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .acoes {
+      display: flex;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    .btn-secundario {
+      flex: 1;
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 10px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 600;
+      transition: all 0.2s;
+    }
+
+    .btn-secundario:hover {
+      border-color: var(--accent);
+      color: var(--highlight);
+    }
+
+    footer {
+      margin-top: 40px;
+      text-align: center;
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    footer a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+
+    @media (max-width: 480px) {
+      header h1 {
+        font-size: 1.7rem;
+      }
+      .tipo-refeicao {
+        grid-template-columns: 1fr 1fr;
+      }
+      .container {
+        padding: 20px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>🍽️ O que comer hoje?</h1>
+    <p>Gerador de ideias de refeições para facilitar o seu dia a dia</p>
+  </header>
+
+  <main class="container">
+    <div class="tipo-refeicao">
+      <button class="tipo-btn ativo" data-tipo="cafe" onclick="selecionarTipo(this)">
+        <span class="emoji">☕</span>
+        Café da manhã
+      </button>
+      <button class="tipo-btn" data-tipo="almoco" onclick="selecionarTipo(this)">
+        <span class="emoji">🍲</span>
+        Almoço
+      </button>
+      <button class="tipo-btn" data-tipo="jantar" onclick="selecionarTipo(this)">
+        <span class="emoji">🌙</span>
+        Jantar
+      </button>
+      <button class="tipo-btn" data-tipo="lanche" onclick="selecionarTipo(this)">
+        <span class="emoji">🥪</span>
+        Lanche
+      </button>
+    </div>
+
+    <div class="opcoes">
+      <span class="chip ativo" data-filtro="todos" onclick="toggleFiltro(this)">Todos</span>
+      <span class="chip" data-filtro="rapido" onclick="toggleFiltro(this)">⚡ Rápido</span>
+      <span class="chip" data-filtro="saudavel" onclick="toggleFiltro(this)">🥗 Saudável</span>
+      <span class="chip" data-filtro="vegetariano" onclick="toggleFiltro(this)">🌱 Vegetariano</span>
+    </div>
+
+    <button class="btn-gerar" onclick="gerarIdeia()">
+      ✨ Gerar ideia de refeição
+    </button>
+
+    <div class="resultado" id="resultado">
+      <div class="card-resultado">
+        <div class="categoria" id="categoria"></div>
+        <h2 id="titulo"></h2>
+        <p id="descricao"></p>
+        <div class="tempo" id="tempo"></div>
+        <div class="acoes">
+          <button class="btn-secundario" onclick="gerarIdeia()">🔄 Outra ideia</button>
+          <button class="btn-secundario" onclick="copiarIdeia()">📋 Copiar</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    Feito para facilitar o dia a dia • Escolha, gere e aproveite 💚
+  </footer>
+
+  <script>
+    // Dados das refeições
+    const refeicoes = {
+      cafe: [
+        { titulo: "Aveia com banana e mel", descricao: "Aveia cozida no leite (ou vegetal), banana em rodelas, um fio de mel e canela. Opcional: granola por cima.", tempo: "10 min", tags: ["rapido", "saudavel", "vegetariano"] },
+        { titulo: "Ovos mexidos com torrada", descricao: "2 ovos mexidos com um fio de azeite, sal e pimenta. Sirva com torrada integral e tomate cereja.", tempo: "8 min", tags: ["rapido", "saudavel"] },
+        { titulo: "Iogurte com frutas e granola", descricao: "Iogurte natural, morango, blueberry ou manga, granola crocante e um toque de mel.", tempo: "5 min", tags: ["rapido", "saudavel", "vegetariano"] },
+        { titulo: "Panqueca de banana", descricao: "Amasse 1 banana, misture com 1 ovo e uma colher de aveia. Frite em frigideira antiaderente. Sirva com mel.", tempo: "12 min", tags: ["rapido", "saudavel", "vegetariano"] },
+        { titulo: "Tapioca com queijo e tomate", descricao: "Tapioca recheada com queijo mussarela e tomate. Simples, leve e deliciosa.", tempo: "7 min", tags: ["rapido", "vegetariano"] },
+        { titulo: "Smoothie verde energético", descricao: "Banana, espinafre, leite de amêndoas, um pouco de gengibre e gelo. Bata tudo no liquidificador.", tempo: "5 min", tags: ["rapido", "saudavel", "vegetariano"] },
+        { titulo: "Pão integral com abacate", descricao: "Torrada integral, abacate amassado com limão, sal e pimenta. Finalize com ovos cozidos ou sementes.", tempo: "8 min", tags: ["rapido", "saudavel", "vegetariano"] },
+        { titulo: "Mingau de milho cremoso", descricao: "Fubá ou milho cremoso cozido no leite, canela e um toque de açúcar ou mel. Conforto puro.", tempo: "15 min", tags: ["vegetariano"] }
+      ],
+      almoco: [
+        { titulo: "Frango grelhado com arroz e salada", descricao: "Peito de frango temperado e grelhado, arroz branco ou integral e salada de folhas verdes com tomate.", tempo: "30 min", tags: ["saudavel"] },
+        { titulo: "Macarrão ao alho e óleo com legumes", descricao: "Macarrão integral refogado no azeite com alho, brócolis, cenoura e abobrinha. Leve e saboroso.", tempo: "20 min", tags: ["rapido", "vegetariano", "saudavel"] },
+        { titulo: "Feijão tropeiro light", descricao: "Feijão, farofa, ovo, bacon em pouca quantidade e temperos. Versão mais leve para o dia a dia.", tempo: "35 min", tags: [] },
+        { titulo: "Salada completa de grão-de-bico", descricao: "Grão-de-bico, tomate, pepino, cebola roxa, azeite, limão e coentro. Proteína vegetal completa.", tempo: "15 min", tags: ["rapido", "saudavel", "vegetariano"] },
+        { titulo: "Strogonoff de frango com arroz", descricao: "Clássico strogonoff de frango com creme de leite e champignon, acompanhado de arroz e batata palha.", tempo: "40 min", tags: [] },
+        { titulo: "Peixe assado com batata doce", descricao: "Filé de peixe temperado no forno com batata doce em cubos e brócolis. Super saudável.", tempo: "35 min", tags: ["saudavel"] },
+        { titulo: "Wrap de frango com vegetais", descricao: "Tortilha integral, frango desfiado, alface, tomate, cenoura ralada e molho de iogurte.", tempo: "15 min", tags: ["rapido", "saudavel"] },
+        { titulo: "Risoto de cogumelos", descricao: "Arroz arbóreo com cogumelos, cebola, alho e um toque de queijo parmesão. Cremoso e reconfortante.", tempo: "35 min", tags: ["vegetariano"] }
+      ],
+      jantar: [
+        { titulo: "Sopa de legumes cremosa", descricao: "Cenoura, abóbora, batata e cebola batidas com um pouco de creme de leite ou leite vegetal. Aquece a alma.", tempo: "25 min", tags: ["saudavel", "vegetariano"] },
+        { titulo: "Omelete de forno com vegetais", descricao: "Ovos, espinafre, tomate, queijo e ervas. Assado no forno. Perfeito para jantar leve.", tempo: "25 min", tags: ["saudavel", "vegetariano"] },
+        { titulo: "Sanduíche natural de atum", descricao: "Pão integral, atum, iogurte natural, alface, tomate e milho. Leve e rápido.", tempo: "10 min", tags: ["rapido", "saudavel"] },
+        { titulo: "Frango desfiado com purê de batata", descricao: "Frango cozido e desfiado temperado, acompanhado de purê caseiro cremoso.", tempo: "40 min", tags: [] },
+        { titulo: "Salada de quinoa com vegetais", descricao: "Quinoa cozida, pepino, tomate, abacate, grão-de-bico e molho de limão e azeite.", tempo: "20 min", tags: ["saudavel", "vegetariano"] },
+        { titulo: "Pizza caseira de frigideira", descricao: "Massa rápida na frigideira, molho de tomate, queijo e os recheios que tiver na geladeira.", tempo: "20 min", tags: ["rapido", "vegetariano"] },
+        { titulo: "Peixe grelhado com legumes no vapor", descricao: "Filé de peixe grelhado com brócolis, cenoura e abobrinha no vapor. Jantar leve e nutritivo.", tempo: "25 min", tags: ["saudavel"] },
+        { titulo: "Caldo verde light", descricao: "Batata, couve, linguiça em pouca quantidade e temperos. Versão mais leve do clássico.", tempo: "30 min", tags: [] }
+      ],
+      lanche: [
+        { titulo: "Mix de castanhas e frutas secas", descricao: "Amêndoas, castanha-de-caju, nozes e uvas-passas. Porção controlada de energia.", tempo: "1 min", tags: ["rapido", "saudavel", "vegetariano"] },
+        { titulo: "Banana com pasta de amendoim", descricao: "Banana cortada ao meio com pasta de amendoim natural. Clássico e satisfatório.", tempo: "2 min", tags: ["rapido", "saudavel", "vegetariano"] },
+        { titulo: "Iogurte com chia e mel", descricao: "Iogurte natural, sementes de chia hidratadas e um fio de mel. Fibras e proteínas.", tempo: "3 min", tags: ["rapido", "saudavel", "vegetariano"] },
+        { titulo: "Torrada com cottage e tomate", descricao: "Pão integral torrado, queijo cottage, tomate e orégano. Leve e proteico.", tempo: "5 min", tags: ["rapido", "saudavel", "vegetariano"] },
+        { titulo: "Smoothie de frutas vermelhas", descricao: "Morango, framboesa, banana e leite (ou vegetal). Refrescante e nutritivo.", tempo: "5 min", tags: ["rapido", "saudavel", "vegetariano"] },
+        { titulo: "Cenoura e pepino com hummus", descricao: "Palitos de cenoura e pepino com pasta de grão-de-bico (hummus). Crocante e saudável.", tempo: "5 min", tags: ["rapido", "saudavel", "vegetariano"] },
+        { titulo: "Ovo cozido com tempero", descricao: "Ovo cozido temperado com sal, pimenta e um fio de azeite. Simples e cheio de proteína.", tempo: "10 min", tags: ["rapido", "saudavel"] },
+        { titulo: "Barrinha caseira de aveia", descricao: "Aveia, banana, pasta de amendoim e chocolate 70%. Faça várias e guarde na geladeira.", tempo: "15 min", tags: ["saudavel", "vegetariano"] }
+      ]
+    };
+
+    let tipoAtual = "cafe";
+    let filtroAtual = "todos";
+
+    function selecionarTipo(btn) {
+      document.querySelectorAll(".tipo-btn").forEach(b => b.classList.remove("ativo"));
+      btn.classList.add("ativo");
+      tipoAtual = btn.dataset.tipo;
+    }
+
+    function toggleFiltro(chip) {
+      document.querySelectorAll(".chip").forEach(c => c.classList.remove("ativo"));
+      chip.classList.add("ativo");
+      filtroAtual = chip.dataset.filtro;
+    }
+
+    function gerarIdeia() {
+      let lista = refeicoes[tipoAtual];
+
+      if (filtroAtual !== "todos") {
+        lista = lista.filter(item => item.tags.includes(filtroAtual));
+      }
+
+      if (lista.length === 0) {
+        // fallback se o filtro não tiver resultados
+        lista = refeicoes[tipoAtual];
+      }
+
+      const ideia = lista[Math.floor(Math.random() * lista.length)];
+
+      const nomesCategoria = {
+        cafe: "Café da manhã",
+        almoco: "Almoço",
+        jantar: "Jantar",
+        lanche: "Lanche"
+      };
+
+      document.getElementById("categoria").textContent = nomesCategoria[tipoAtual];
+      document.getElementById("titulo").textContent = ideia.titulo;
+      document.getElementById("descricao").textContent = ideia.descricao;
+      document.getElementById("tempo").innerHTML = `⏱️ Preparo aproximado: ${ideia.tempo}`;
+
+      const resultado = document.getElementById("resultado");
+      resultado.classList.remove("visivel");
+      // força reflow para reiniciar animação
+      void resultado.offsetWidth;
+      resultado.classList.add("visivel");
+    }
+
+    function copiarIdeia() {
+      const titulo = document.getElementById("titulo").textContent;
+      const descricao = document.getElementById("descricao").textContent;
+      const tempo = document.getElementById("tempo").textContent;
+
+      const texto = `${titulo}\n${descricao}\n${tempo}`;
+
+      navigator.clipboard.writeText(texto).then(() => {
+        const btn = event.target;
+        const original = btn.textContent;
+        btn.textContent = "✅ Copiado!";
+        setTimeout(() => {
+          btn.textContent = original;
+        }, 1500);
+      }).catch(() => {
+        alert("Não foi possível copiar. Tente selecionar o texto manualmente.");
+      });
+    }
+
+    // Gera uma ideia ao carregar a página
+    window.addEventListener("DOMContentLoaded", () => {
+      gerarIdeia();
+    });
+  </script>
+</body>
+</html>
